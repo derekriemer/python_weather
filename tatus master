@@ -1,0 +1,256 @@
+[1mdiff --git a/forecast.py b/forecast.py[m
+[1mnew file mode 100644[m
+[1mindex 0000000..d9df90d[m
+[1m--- /dev/null[m
+[1m+++ b/forecast.py[m
+[36m@@ -0,0 +1,104 @@[m
+[32m+[m[32mimport datetime[m
+[32m+[m[32mimport forecastio[m
+[32m+[m[32mimport textwrap[m
+[32m+[m[32mimport webbrowser[m
+[32m+[m
+[32m+[m[32mdef makeForecast(forecast, item):[m
+[32m+[m	[32mtry:[m
+[32m+[m		[32mfor i in forecast.alerts():[m
+[32m+[m			[32mprint "{:^80}".format(i.title)[m
+[32m+[m			[32mprint "would you like to know more? (Y/N)"[m
+[32m+[m			[32mchoice=getInput("y","n")[m
+[32m+[m			[32mif choice=='y':[m
+[32m+[m				[32mprint "displaying warning in web browser."[m
+[32m+[m				[32mwebbrowser.open(i.uri)[m
+[32m+[m				[32mprint "done. press enter to continue."[m
+[32m+[m				[32mgetInput("")[m
+[32m+[m	[32mexcept NameError:[m
+[32m+[m		[32mpass[m
+[32m+[m	[32mif item=='c' or item=='currently':[m
+[32m+[m		[32mcurrent=forecast.currently()[m
+[32m+[m		[32mprint "It is currently", current.summary, "and", int(current.temperature), "degrees f"[m
+[32m+[m		[32mday=forecast.daily()[m
+[32m+[m		[32mtoday=day.data[0][m
+[32m+[m		[32mprint today.summary[m
+[32m+[m		[32mprint "there is a {0:.0%} chance of precipitation.".format(today.precipProbability)[m
+[32m+[m		[32mhighTime= datetime.datetime.fromtimestamp(today.temperatureMaxTime)[m
+[32m+[m		[32mprint "daily high", today.temperatureMax, "at", "{}:{}".format(highTime.hour, highTime.minute)[m
+[32m+[m		[32mlowTime=datetime.datetime.fromtimestamp(today.temperatureMinTime)[m
+[32m+[m		[32mprint "daily low", today.temperatureMin, "at", "{}:{}".format(lowTime.hour, lowTime.minute)[m
+[32m+[m		[32mprint "It is", windy(today.windSpeed)+",", "the wind speed is ", today.windSpeed, "mph"[m
+[32m+[m[41m		[m
+[32m+[m	[32melif item== 'h' or item == 'hourly':[m
+[32m+[m		[32mhourly=forecast.hourly()[m
+[32m+[m		[32mhourData=[(i.time.hour, i.temperature, i.precipProbability) for i in hourly.data][m
+[32m+[m		[32mi=hourData[0][0][m
+[32m+[m		[32mlastIndex=1[m
+[32m+[m		[32mwhile lastIndex<len(hourData):[m
+[32m+[m			[32mif hourData[lastIndex][0] == i:[m
+[32m+[m				[32mbreak[m
+[32m+[m			[32mlastIndex+=1[m
+[32m+[m		[32mprint "time\tTemperature\tprecipitation"[m
+[32m+[m		[32mfor i in range(lastIndex+1):[m
+[32m+[m			[32mcur=hourData[i][m
+[32m+[m			[32mprint "{0}:00\t{1} F\t{2:.0%}".format(cur[0],int(cur[1]), cur[2])[m
+[32m+[m	[32melif item == 'd' or item == "daily":[m
+[32m+[m		[32mdaily = forecast.daily()[m
+[32m+[m		[32mW_DAYS = ['Monday', 'Tuesday', 'Wednesday','Thursday', 'Friday', 'Saturday', 'Sunday'][m
+[32m+[m		[32mfor i in daily.data:[m
+[32m+[m			[32mformatter={}[m
+[32m+[m			[32mtry:[m
+[32m+[m				[32mformatter['weekday'] = W_DAYS[i.time.weekday()][m
+[32m+[m				[32mtmxt = datetime.datetime.fromtimestamp(i.temperatureMaxTime)[m
+[32m+[m				[32mtmnt = datetime.datetime.fromtimestamp(i.temperatureMinTime)[m
+[32m+[m				[32mtemperatureMaxTime = "{:02}:{:02}".format(tmxt.hour, tmxt.minute)[m
+[32m+[m				[32mtemperatureMinTime = "{:02}:{:02}".format(tmnt.hour, tmnt.minute)[m
+[32m+[m				[32mformatter['temperaturemax']=i.temperatureMax[m
+[32m+[m				[32mformatter['temperaturemaxtime'] = temperatureMaxTime[m
+[32m+[m				[32mformatter['temperaturemin'] = i.temperatureMin[m
+[32m+[m				[32mformatter['temperaturemintime'] = temperatureMinTime[m
+[32m+[m				[32mif i.precipProbability > 0:[m
+[32m+[m					[32mformatter['preciptype']= "chance of "+i.precipType[m
+[32m+[m					[32mformatter['precipprobability'] = "{:.0%}".format(i.precipProbability)[m
+[32m+[m				[32melse:[m
+[32m+[m					[32mformatter['preciptype'] = 'No precipitation is expected '[m
+[32m+[m					[32mformatter['precipprobability'] = ""[m
+[32m+[m				[32mformatter['summary'] = i.summary.replace(u'\u2013','--')[m
+[32m+[m				[32mformatter['wind'] = windy(i.windSpeed)+" Wind speed: "+str(int(i.windSpeed))+" mph "[m
+[32m+[m				[32mprint textwrap.fill("{weekday}: {summary} {wind}High: {temperaturemax} degrees at {temperaturemaxtime}. Low: {temperaturemin} Degrees  at {temperaturemintime}. {preciptype}{precipprobability}".format(**formatter))[m
+[32m+[m				[32mprint ""[m
+[32m+[m[41m				[m
+[32m+[m			[32mexcept  NameError as e:[m
+[32m+[m				[32mprint e.message[m
+[32m+[m				[32mprint "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"[m
+[32m+[m
+[32m+[m
+[32m+[m[32mdef getInput(*choices):[m
+[32m+[m	[32mwhile True:[m
+[32m+[m		[32ma=raw_input()[m
+[32m+[m		[32mif a in choices:[m
+[32m+[m			[32mreturn a[m
+[32m+[m		[32melse:[m
+[32m+[m			[32mprint "bad option, try again."[m
+[32m+[m
+[32m+[m[32mdef windy(speed):[m
+[32m+[m	[32mif speed <= 10:[m
+[32m+[m		[32mreturn "calm"[m
+[32m+[m	[32melif speed > 10 and speed <= 15:[m
+[32m+[m		[32mreturn "breezey"[m
+[32m+[m	[32melif speed > 15 and speed <= 20:[m
+[32m+[m		[32mreturn "quite breezey"[m
+[32m+[m	[32melif speed > 20 and speed <= 30:[m
+[32m+[m		[32mreturn "windy"[m
+[32m+[m	[32melif speed > 30 and speed <= 40:[m
+[32m+[m		[32mreturn "quite windy"[m
+[32m+[m	[32melif speed > 40 and speed <= 75:[m
+[32m+[m		[32mreturn "extremely windy"[m
+[32m+[m	[32melse:[m
+[32m+[m		[32mreturn "a hurricane forced wind."[m
+[32m+[m		[32mpass[m
+[32m+[m
+[32m+[m[32mdef start(lat, lng, item):[m
+[32m+[m	[32mapi_key = "af5e4568466e3d31b3dbb558d5dc8758"[m
+[32m+[m	[32mforecast = forecastio.load_forecast(api_key, lat, lng)[m
+[32m+[m	[32mmakeForecast(forecast, item)[m
+[1mdiff --git a/locations.py b/locations.py[m
+[1mnew file mode 100644[m
+[1mindex 0000000..d544cb6[m
+[1m--- /dev/null[m
+[1m+++ b/locations.py[m
+[36m@@ -0,0 +1,44 @@[m
+[32m+[m[32mimport xml.etree.cElementTree as ET[m
+[32m+[m[32mimport os[m
+[32m+[m[32mif not os.path.exists("locations.xml"):[m
+[32m+[m	[32mroot = ET.Element("root")[m
+[32m+[m	[32mtree = ET.ElementTree(root)[m
+[32m+[m	[32mtree.write("locations.xml")[m
+[32m+[m
+[32m+[m[32mclass Locations:[m
+[32m+[m	[32mdef __init__(self):[m
+[32m+[m		[32mself.tree = ET.parse('locations.xml')[m
+[32m+[m		[32mself.root = self.tree.getroot()[m
+[32m+[m[41m	[m
+[32m+[m	[32mdef get(self, location):[m
+[32m+[m		[32m"""[m
+[32m+[m		[32mReturns the Location object if it exists, otherwise returns None.[m
+[32m+[m		[32m"""[m
+[32m+[m		[32mcur = None[m
+[32m+[m		[32mfor i in self.root:[m
+[32m+[m			[32mif i.get('name')==location:[m
+[32m+[m				[32mcur=i[m
+[32m+[m				[32mbreak[m
+[32m+[m		[32mreturn cur[m
+[32m+[m[41m	[m
+[32m+[m	[32mdef addLocation(self, name, lat, lng):[m
+[32m+[m		[32mattrib={[m
+[32m+[m			[32m"name": name,[m
+[32m+[m			[32m"lat": str(lat),[m
+[32m+[m			[32m"lng": str(lng)[m
+[32m+[m		[32m}[m
+[32m+[m		[32mET.SubElement(self.root, "location", attrib)[m
+[32m+[m[41m	[m
+[32m+[m	[32mdef removeLocation(self, alias):[m
+[32m+[m		[32mfor i in self.root:[m
+[32m+[m			[32mif i.get('name') == alias:[m
+[32m+[m				[32mself.root.remove(i)[m
+[32m+[m				[32mreturn True[m
+[32m+[m		[32mreturn False[m
+[32m+[m[41m	[m
+[32m+[m	[32mdef close(self):[m
+[32m+[m		[32mself.tree.write("locations.xml")[m
+[32m+[m[41m	[m
+[32m+[m	[32mdef __del__(self):[m
+[32m+[m		[32mpass[m
+[32m+[m		[32mself.close()[m
+\ No newline at end of file[m
+[1mdiff --git a/locations.xml b/locations.xml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..088f654[m
+[1m--- /dev/null[m
+[1m+++ b/locations.xml[m
+[36m@@ -0,0 +1 @@[m
+[32m+[m[32m<root><location lat="40.014986" lng="-105.270546" name="school" /><location lat="39.814454" lng="-105.099160" name="home" /></root>[m
+\ No newline at end of file[m
+[1mdiff --git a/weather.bat b/weather.bat[m
+[1mnew file mode 100644[m
+[1mindex 0000000..5a6e199[m
+[1m--- /dev/null[m
+[1m+++ b/weather.bat[m
+[36m@@ -0,0 +1,3 @@[m
+[32m+[m[32m@echo Off[m
+[32m+[m[32mcd c:\users\derek riemer\google drive\python\weather[m
+[32m+[m[32mweather.py %*[m
+\ No newline at end of file[m
+[1mdiff --git a/weather.py b/weather.py[m
+[1mnew file mode 100644[m
+[1mindex 0000000..33e9cad[m
+[1m--- /dev/null[m
+[1m+++ b/weather.py[m
+[36m@@ -0,0 +1,69 @@[m
+[32m+[m[32m# -*- coding: utf-8 -*-[m
+[32m+[m[32mimport argparse[m
+[32m+[m[32mimport locations[m
+[32m+[m[32mimport forecast[m
+[32m+[m[32mdef getWeather(args):[m
+[32m+[m	[32mlocationConfig = locations.Locations()[m
+[32m+[m	[32mlocation = locationConfig.get(args.location)[m
+[32m+[m	[32mif location is None:[m
+[32m+[m		[32mprint "that location doesn't exist in my database. Please add it first."[m
+[32m+[m	[32melse:[m
+[32m+[m		[32mprint "Weather for ", args.location[m
+[32m+[m		[32mforecast.start(location.get('lat'), location.get('lng'), args.forecast)[m
+[32m+[m
+[32m+[m
+[32m+[m[32mdef add(args):[m
+[32m+[m	[32mlocationConfig = locations.Locations()[m
+[32m+[m	[32mlocationConfig.addLocation(args.alias, args.lat, args.lng)[m
+[32m+[m	[32mlocationConfig.close()[m
+[32m+[m	[32mprint "location", args.alias, "was added successfully."[m
+[32m+[m
+[32m+[m[32mdef remove(args):[m
+[32m+[m	[32mlocationConfig = locations.Locations()[m
+[32m+[m	[32mif locationConfig.removeLocation(args.alias):[m
+[32m+[m		[32mprint "location", args.alias, "was removed successfully."[m
+[32m+[m	[32melse:[m
+[32m+[m		[32mprint "uh oh, that location couldn't be removed."[m
+[32m+[m	[32mlocationConfig.close()[m
+[32m+[m
+[32m+[m
+[32m+[m[32mparser = argparse.ArgumentParser(description='get the current weather')[m
+[32m+[m
+[32m+[m[32msubparsers = parser.add_subparsers()[m
+[32m+[m
+[32m+[m[32mparser_at = subparsers.add_parser('at', help='Type the location alias for where you want the weather followed by any of hourly, daily, currently')[m
+[32m+[m
+[32m+[m[32mparser_at.add_argument('location',[m
+[32m+[m	[32mhelp='The location\'s alias, for example home.')[m
+[32m+[m[32mparser_at.add_argument('forecast',[m
+[32m+[m	[32mchoices=['c','h','d', 'hourly', 'daily', 'currently'],[m
+[32m+[m		[32mnargs='?',[m
+[32m+[m	[32mdefault="c",[m
+[32m+[m	[32mhelp='Time interval, type h for hourly, c for current, d for daily. (Default: Current)')[m
+[32m+[m
+[32m+[m[32mparser_at.set_defaults(func=getWeather)[m
+[32m+[m[32mparser_add = subparsers.add_parser('add', help='Type your location in the form alias lat long')[m
+[32m+[m[32mparser_add.add_argument('alias',[m
+[32m+[m	[32mhelp="A name for the location that you use to get weather. i.e. work, home, grandmas_house, and this shouldn't have spaces.")[m
+[32m+[m[32mparser_add.add_argument('lat',[m
+[32m+[m	[32mhelp='The laditude for the location. This should be a number.')[m
+[32m+[m[32mparser_add.add_argument('lng',[m
+[32m+[m	[32mhelp='The longitude for the location. This should be a number.')[m
+[32m+[m[32mparser_add.set_defaults(func=add)[m
+[32m+[m
+[32m+[m[32mparser_remove = subparsers.add_parser('remove', help='Type the location alias you would like to remove in the form alias ')[m
+[32m+[m[32mparser_remove.add_argument('alias',[m
+[32m+[m	[32mhelp="A name for the location that you use to get weather. i.e. work, home, grandmas_house, and this shouldn't have spaces.")[m
+[32m+[m[32mparser_remove.set_defaults(func=remove)[m
+[32m+[m[32margs=parser.parse_args()[m
+[32m+[m[32margs.func(args)[m
+[32m+[m
+[32m+[m
+[32m+[m[32m#lat = 40.014986[m
+[32m+[m[32m#lng = -105.270546[m
+[32m+[m
+[32m+[m[32m#user_input(forecast,args.type)[m
+[32m+[m
+[32m+[m
+[32m+[m
+[32m+[m
+warning: CRLF will be replaced by LF in locations.py.
+The file will have its original line endings in your working directory.

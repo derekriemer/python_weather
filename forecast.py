@@ -99,6 +99,6 @@ def windy(speed):
 		pass
 
 def start(lat, lng, item):
-	api_key = "af5e4568466e3d31b3dbb558d5dc8758"
+	api_key = open("apikey").read(300)
 	forecast = forecastio.load_forecast(api_key, lat, lng)
 	makeForecast(forecast, item)
