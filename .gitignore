@@ -57,3 +57,7 @@ docs/_build/
 
 # PyBuilder
 target/
+#Weather.xml files
+location.xml
+#apikey files
+apikey
